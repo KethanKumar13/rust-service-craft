@@ -1,6 +1,6 @@
 # rust-service-craft
 
-**Production-grade backend services in Rust: designed, built, and tested with the same discipline as real-world systems.**
+**Production-style backend services in Rust: Axum, Tokio, SQLx, middleware, auth, and testing, built stage by stage.**
 
 Axum · Tokio · Tower · SQLx · PostgreSQL · serde · tracing · JWT
 
@@ -8,19 +8,19 @@ Axum · Tokio · Tower · SQLx · PostgreSQL · serde · tracing · JWT
 
 ## About
 
-`rust-service-craft` is an engineering workbench for building HTTP services in Rust.  
-Each module isolates one concern of a production backend, implements it properly, and
-documents the design decisions behind it. The modules then come together in a complete,
-multi-tenant reference service.
+`rust-service-craft` is an engineering workbench for building HTTP services in Rust.
+Each module isolates one concern of a production backend, explains the design decisions behind it,
+and ends with a complete working example and a set of exercises. The modules then come together
+in a multi-tenant reference service.
 
-The focus is not on "hello world" examples but on the patterns that matter in production:
+The focus is on the patterns that matter in production:
 
 - **Type-driven correctness:** newtype IDs, exhaustive error enums, compile-time-checked SQL
 - **Layered architecture:** HTTP, domain logic, persistence, and shared types kept separate
 - **Security by default:** cookie-based JWT auth, capability-based authorization, tenant isolation
 - **Predictable performance:** streaming responses, bounded buffering, backpressure
 - **Operational readiness:** structured tracing, typed configuration, graceful shutdown
-- **Verified behaviour:** integration tests against a real PostgreSQL database
+- **Verified behaviour:** handler tests and integration tests against a real PostgreSQL database
 
 ---
 
@@ -57,61 +57,25 @@ The reference service is a Cargo workspace with a strict dependency direction:
 
 ## Modules
 
-| Module | Concern | Key topics | Status |
+| # | Module | Concern | Key topics |
 |---|---|---|---|
-| [`foundations`](docs/notes/00-rust-prerequisites.md) | Language core | Ownership, traits, generics, `Result`, serde, `Arc`, `Send`/`Sync` | 🟡 In progress |
-| `async-runtime` | Concurrency | Tokio, tasks, channels, `select!`, async locks | ⬜ Planned |
-| `routing` | HTTP surface | `Router`, handlers, nesting, merging, path params | ⬜ Planned |
-| `extractors` | Request input | `Path`, `Query`, `Json`, custom `FromRequestParts` | ⬜ Planned |
-| `errors` | Failure model | `thiserror`, `IntoResponse`, `From` conversions, consistent error bodies | ⬜ Planned |
-| `state-and-config` | Shared resources | `AppState`, `Arc`, typed config from environment | ⬜ Planned |
-| `persistence` | Data | SQLx, migrations, transactions, optimistic locking with `version` | ⬜ Planned |
-| `middleware` | Cross-cutting concerns | Tower layers, tracing, CORS, timeouts, body limits | ⬜ Planned |
-| `auth` | Identity and access | JWT in HttpOnly cookies, token revocation, capabilities, tenant scoping | ⬜ Planned |
-| `realtime` | Live updates | WebSockets, in-memory presence | ⬜ Planned |
-| `streaming` | Large payloads | NDJSON streaming, bounded channels, backpressure | ⬜ Planned |
-| `testing` | Verification | `oneshot` handler tests, DB integration tests, `cargo nextest` | ⬜ Planned |
-| **`reference-service`** | **Everything combined** | Multi-tenant REST service with all of the above | ⬜ Planned |
+| 00 | [`foundations`](docs/notes/00-rust-prerequisites.md) | Language core | Ownership, traits, generics, `Result`, serde, `Arc`, `Send`/`Sync` |
+| 01 | [`async-runtime`](docs/notes/01-async-runtime.md) | Concurrency | Tokio, tasks, channels, `select!`, async locks |
+| 02 | [`routing`](docs/notes/02-routing.md) | HTTP surface | `Router`, handlers, nesting, merging, path params |
+| 03 | [`extractors`](docs/notes/03-extractors.md) | Request input | `Path`, `Query`, `Json`, custom `FromRequestParts`, validation |
+| 04 | [`errors`](docs/notes/04-errors.md) | Failure model | `thiserror`, `IntoResponse`, `From` conversions, consistent error bodies |
+| 05 | [`state-and-config`](docs/notes/05-state-and-config.md) | Shared resources | `AppState`, `Arc`, `FromRef`, typed config from environment |
+| 06 | [`persistence`](docs/notes/06-persistence.md) | Data | SQLx, migrations, transactions, optimistic locking with `version` |
+| 07 | [`middleware`](docs/notes/07-middleware.md) | Cross-cutting concerns | Tower layers, tracing, CORS, timeouts, body limits |
+| 08 | [`auth`](docs/notes/08-auth.md) | Identity and access | Argon2, JWT in HttpOnly cookies, revocation, capabilities, tenant scoping |
+| 09 | [`realtime`](docs/notes/09-realtime.md) | Live updates | WebSockets, in-memory presence, broadcast rooms |
+| 10 | [`streaming`](docs/notes/10-streaming.md) | Large payloads | NDJSON streaming, bounded channels, backpressure |
+| 11 | [`testing`](docs/notes/11-testing.md) | Verification | `oneshot` handler tests, DB integration tests, `cargo nextest` |
+| 12 | [**`reference-service`**](docs/notes/12-reference-service.md) | **Everything combined** | Multi-tenant REST service: design, schema, API surface, milestones |
+| 13 | [`dropshot`](docs/notes/13-dropshot.md) | A second framework | Endpoints, typed responses, OpenAPI-first design, comparison with Axum |
 
-Each module has a README with its **goal**, **design decisions**, **how to run it**, and **trade-offs**.
-
----
-
-## Repository layout
-
-```text
-rust-service-craft/
-├── crates/                  # One crate per module
-├── projects/
-│   └── reference-service/   # Layered workspace: api / domain / db / shared
-├── docs/
-│   └── notes/               # Technical write-ups per module
-├── .github/workflows/       # CI: fmt, clippy, tests
-├── Cargo.toml               # Workspace root with shared dependency versions
-└── rustfmt.toml
-```
-
----
-
-## Getting started
-
-**Requirements:** Rust stable, Docker (for PostgreSQL in later modules), and `cargo-nextest`.
-
-```bash
-git clone https://github.com/KethanKumar13/rust-service-craft.git
-cd rust-service-craft
-
-cargo build --workspace
-cargo nextest run --workspace        # or: cargo test --workspace
-cargo run -p <module-name>
-```
-
-Quality checks (the same ones CI runs):
-
-```bash
-cargo fmt --all -- --check
-cargo clippy --workspace --all-targets -- -D warnings
-```
+Each module covers the concepts, shows how they look in a production service,
+and ends with a complete runnable example and exercises.
 
 ---
 
@@ -121,7 +85,7 @@ These rules apply across the whole repository.
 
 **Code**
 
-- Rust 2021+, `snake_case` functions and modules, `PascalCase` types
+- Rust 2021, `snake_case` functions and modules, `PascalCase` types
 - No `unwrap()` / `expect()` in runtime code: use `?`, `ok_or_else`, `map_err`
 - `thiserror` for library and domain errors, `anyhow` only at binary entry points
 - Prefer `#[expect(lint, reason = "...")]` over a broad `#[allow]`
@@ -150,18 +114,7 @@ These rules apply across the whole repository.
 **Git**
 
 - Conventional Commits: `feat(auth): add capability check`, `test(db): cover version conflict`
-- One focused branch and PR per module
-
----
-
-## Current state
-
-> Keep this section up to date. It is the hand-off point for picking up work in a new session.
-
-- **Done:** repository set up, foundations notes (`docs/notes/00-rust-prerequisites.md`)
-- **Now:** foundations exercises (ownership, enums, `Result`, traits, serde, `Arc`/`Mutex`)
-- **Next:** workspace `Cargo.toml`, CI workflow, and the `async-runtime` module
-- **Open questions:** none
+- One focused branch and PR per change
 
 ---
 
@@ -171,4 +124,3 @@ These rules apply across the whole repository.
 - [Tokio tutorial](https://tokio.rs/tokio/tutorial)
 - [SQLx](https://github.com/launchbadge/sqlx)
 - [The Rust Programming Language](https://doc.rust-lang.org/book/)
-- *Zero To Production in Rust* by Luca Palmieri
